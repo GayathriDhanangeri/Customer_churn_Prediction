@@ -1,0 +1,52 @@
+// ============ Project 02 - DAX measures (create a table named _Measures, paste each measure) ============
+// Tables: fact_customers, dim_date, dim_risk_band, driver_importance, threshold_analysis, model_comparison
+
+Customers            = COUNTROWS ( fact_customers )
+Churners             = CALCULATE ( COUNTROWS ( fact_customers ), fact_customers[churned] = 1 )
+Churn Rate           = DIVIDE ( [Churners], [Customers] )
+Avg Risk Score       = AVERAGE ( fact_customers[risk_score] )
+Avg Monthly Charge   = AVERAGE ( fact_customers[monthly_charges] )
+Avg Tenure (months)  = AVERAGE ( fact_customers[tenure_months] )
+
+// ---- Risk & retention ----
+Flagged Customers    = CALCULATE ( COUNTROWS ( fact_customers ), fact_customers[predicted_churn] = 1 )
+Flagged %            = DIVIDE ( [Flagged Customers], [Customers] )
+True Positives       = CALCULATE ( COUNTROWS ( fact_customers ), fact_customers[predicted_churn] = 1, fact_customers[churned] = 1 )
+Recall               = DIVIDE ( [True Positives], [Churners] )
+Precision            = DIVIDE ( [True Positives], [Flagged Customers] )
+High+Critical Customers =
+    CALCULATE ( COUNTROWS ( fact_customers ), fact_customers[risk_band] IN { "High", "Critical" } )
+Monthly Revenue at Risk =
+    CALCULATE ( SUM ( fact_customers[monthly_charges] ), fact_customers[predicted_churn] = 1 )
+Annualised Revenue at Risk = [Monthly Revenue at Risk] * 12
+Actual Revenue Lost (monthly) =
+    CALCULATE ( SUM ( fact_customers[monthly_charges] ), fact_customers[churned] = 1 )
+
+// ---- Time intelligence (uses cancellation month; relationship dim_date[date] -> fact_customers[churn_date], inactive for signup) ----
+Cancellations =
+    CALCULATE ( COUNTROWS ( fact_customers ), fact_customers[churned] = 1, USERELATIONSHIP ( dim_date[date], fact_customers[churn_date] ) )
+Cancellations MoM % =
+    VAR cur  = [Cancellations]
+    VAR prev = CALCULATE ( [Cancellations], DATEADD ( dim_date[date], -1, MONTH ) )
+    RETURN DIVIDE ( cur - prev, prev )
+New Sign-ups =
+    CALCULATE ( COUNTROWS ( fact_customers ), USERELATIONSHIP ( dim_date[date], fact_customers[signup_date] ) )
+
+// ---- Benchmarks & helpers ----
+Overall Churn Rate (ignore filters) = CALCULATE ( [Churn Rate], ALL ( fact_customers ) )
+Churn Rate vs Overall (pp) = ( [Churn Rate] - [Overall Churn Rate (ignore filters)] ) * 100
+Risk Band Lift = DIVIDE ( [Churn Rate], [Overall Churn Rate (ignore filters)] )
+Top Reason =
+    VAR t = TOPN ( 1, SUMMARIZE ( FILTER ( fact_customers, fact_customers[churned] = 1 ), fact_customers[cancel_reason], "n", COUNTROWS ( fact_customers ) ), [n], DESC )
+    RETURN MAXX ( t, fact_customers[cancel_reason] )
+
+// ---- Dynamic what-if threshold (create a What-if parameter 'Threshold' 0.30-0.90 step 0.01 -> creates [Threshold Value]) ----
+Contacted @ Threshold = CALCULATE ( COUNTROWS ( fact_customers ), fact_customers[risk_score] >= [Threshold Value] )
+Caught Churners @ Threshold =
+    CALCULATE ( COUNTROWS ( fact_customers ), fact_customers[risk_score] >= [Threshold Value], fact_customers[churned] = 1 )
+Recall @ Threshold    = DIVIDE ( [Caught Churners @ Threshold], [Churners] )
+Precision @ Threshold = DIVIDE ( [Caught Churners @ Threshold], [Contacted @ Threshold] )
+Net Value @ Threshold =
+    VAR tp = [Caught Churners @ Threshold]
+    VAR fp = [Contacted @ Threshold] - tp
+    RETURN tp * ( 0.30 * 300 - 40 ) - fp * 40     // assumptions: $40 offer, $300 save value, 30% success - edit to taste

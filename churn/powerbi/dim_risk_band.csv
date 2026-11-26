@@ -1,0 +1,5 @@
+risk_band,sort_order
+Low,1
+Moderate,2
+High,3
+Critical,4

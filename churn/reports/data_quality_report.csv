@@ -1,0 +1,8 @@
+,before_cleaning,after_cleaning
+duplicate_customer_ids,75,0
+negative_tenure,15,0
+negative_charges,0,0
+missing_usage,181,180
+missing_charges,120,120
+missing_payment_method,91,0
+churn_label_not_binary,0,0

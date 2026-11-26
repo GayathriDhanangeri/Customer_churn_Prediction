@@ -1,0 +1,26 @@
+,coefficient
+cat__contract_type_Two year,-1.0494145438678806
+num__tenure_months,-0.8056643605662673
+num__avg_weekly_usage_hrs,-0.2955392792862015
+cat__plan_Basic,-0.19115922921918407
+cat__payment_method_Mailed check,-0.16718629189219059
+cat__age_group_51+,-0.14148218067854815
+cat__payment_method_Bank transfer,-0.1086195681379072
+cat__contract_type_One year,-0.06533150536995462
+cat__payment_method_Unknown,-0.05334458439594026
+cat__payment_method_Credit card,-0.05205915264025285
+cat__age_group_26-35,-0.03693439475643271
+cat__age_group_36-50,-0.034383538704964474
+cat__plan_Standard,-0.016324355487744212
+cat__region_East,-0.014818535126228286
+cat__region_Central,-0.009592483738565796
+cat__region_South,0.004864986492913844
+cat__region_North,0.007017315618138429
+cat__region_West,0.012834471482181135
+cat__plan_Premium,0.2077893394353697
+cat__age_group_18-25,0.2131058688683863
+num__monthly_charges,0.22839755122551253
+num__late_payments_12m,0.2977712680602841
+num__support_contacts_90d,0.35179327324066423
+cat__payment_method_Electronic check,0.3815153517947322
+cat__contract_type_Month-to-month,1.115051803966271
